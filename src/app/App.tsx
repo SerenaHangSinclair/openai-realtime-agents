@@ -9,6 +9,7 @@ import Image from "next/image";
 import Transcript from "./components/Transcript";
 import Events from "./components/Events";
 import BottomToolbar from "./components/BottomToolbar";
+import { VideoAnalysisDisplay } from "./components/VideoAnalysisDisplay";
 
 // Types
 import { SessionStatus } from "@/app/types";
@@ -110,6 +111,7 @@ function App() {
   const [userText, setUserText] = useState<string>("");
   const [isPTTActive, setIsPTTActive] = useState<boolean>(false);
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
+  const [videoAnalysisSessionId, setVideoAnalysisSessionId] = useState<string | undefined>();
   const [isAudioPlaybackEnabled, setIsAudioPlaybackEnabled] = useState<boolean>(
     () => {
       if (typeof window === 'undefined') return true;
@@ -516,15 +518,29 @@ function App() {
       </div>
 
       <div className="flex flex-1 gap-2 px-2 overflow-hidden relative">
-        <Transcript
-          userText={userText}
-          setUserText={setUserText}
-          onSendMessage={handleSendTextMessage}
-          downloadRecording={downloadRecording}
-          canSend={
-            sessionStatus === "CONNECTED"
-          }
-        />
+        <div className="flex-1 flex flex-col">
+          <Transcript
+            userText={userText}
+            setUserText={setUserText}
+            onSendMessage={handleSendTextMessage}
+            downloadRecording={downloadRecording}
+            canSend={
+              sessionStatus === "CONNECTED"
+            }
+          />
+
+          {agentSetKey === 'videoAnalysis' && (
+            <VideoAnalysisDisplay
+              sessionId={videoAnalysisSessionId}
+              onCommand={(command) => {
+                // Send command as text message
+                if (sessionStatus === "CONNECTED") {
+                  sendUserText(command);
+                }
+              }}
+            />
+          )}
+        </div>
 
         <Events isExpanded={isEventsPaneExpanded} />
       </div>
